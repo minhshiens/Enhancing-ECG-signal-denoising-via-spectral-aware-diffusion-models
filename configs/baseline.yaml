@@ -1,0 +1,7 @@
+exp_name: "baseline_run"
+loss_type: "mse"
+data_path: "data/raw/mitbih_train.csv"
+batch_size: 32
+lr: 1e-4
+epochs: 50
+timesteps: 1000
