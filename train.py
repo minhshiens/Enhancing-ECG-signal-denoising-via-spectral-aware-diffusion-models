@@ -11,7 +11,7 @@ from tqdm import tqdm
 from src.dataset import ECGDataset
 from src.model import ConditionalUNet1D
 from src.losses import DiffusionLoss
-from src.utils import set_seed # Assumed you implement this simple helper
+from src.utils import set_seed 
 
 def linear_beta_schedule(timesteps):
     beta_start = 0.0001
@@ -23,9 +23,8 @@ def train(config, config_path):
     print(f"Python đang chạy: {sys.executable}")
     print(f"PyTorch Version: {torch.__version__}")
     
-    # ÉP BẮT BUỘC DÙNG CUDA (Nếu không có sẽ báo lỗi đỏ lòm ngay lập tức)
     device = torch.device("cuda") 
-    print(f"✅ ĐANG BẮT BUỘC SỬ DỤNG: {torch.cuda.get_device_name(0)}")
+    print(f"✅ ĐANG SỬ DỤNG: {torch.cuda.get_device_name(0)}")
     
     # 1. Setup Dirs
     exp_dir = f"experiments/{config['exp_name']}"
@@ -34,8 +33,7 @@ def train(config, config_path):
     with open(os.path.join(exp_dir, "config.yaml"), 'w') as f:
         yaml.dump(config, f)
 
-    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # print(f"Training on {device} | Experiment: {config['exp_name']}")
+    print(f"Training on {device} | Experiment: {config['exp_name']}")
 
     # 2. Data
     dataset = ECGDataset(config['data_path'], train=True)
@@ -56,6 +54,8 @@ def train(config, config_path):
     alphas_cumprod = torch.cumprod(alphas, axis=0)
     sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
     sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
+    
+    WARMUP_EPOCHS = 10
 
     # 6. Loop
     for epoch in range(config['epochs']):
@@ -78,15 +78,26 @@ def train(config, config_path):
             )
 
             # Model Prediction
-            # We predict x_0 directly to facilitate Spectral Loss calculation
-            # (Alternatively, predict epsilon and convert to x_0 inside loss)
             pred_x0 = model(x_t, t, condition)
+            
+            
+            if config['loss_type'] == 'spectral' and epoch < WARMUP_EPOCHS:
+                loss = criterion.mse(pred_x0, clean)
+                pbar.set_description(f"Epoch {epoch+1}/{config['epochs']} [Warmup: MSE Only]")
+            else:
+                loss = criterion(pred_x0, clean)
+                
+                if config['loss_type'] == 'spectral':
+                    pbar.set_description(f"Epoch {epoch+1}/{config['epochs']} [Training: Full Loss]")
+            
+            
 
-            # Calculate Loss
-            loss = criterion(pred_x0, clean)
+            # # Calculate Loss
+            # loss = criterion(pred_x0, clean)
 
             optimizer.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
             optimizer.step()
 
             epoch_loss += loss.item()

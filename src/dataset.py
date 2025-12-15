@@ -34,12 +34,8 @@ class ECGDataset(Dataset):
         
         if self.train:
             # Generate noise based on the normalized clean signal context
-            # (In practice, we add noise then normalize, or add noise to normalized. 
-            # Here we add noise to normalized for consistent artifact scale)
             noisy_norm = add_noise(clean_norm)
         else:
-            # For validation, we might want fixed noise or just return clean
-            # For this setup, we treat validation same as train or use a fixed seed externally
             noisy_norm = add_noise(clean_norm)
 
         # Convert to Tensor [Channels, Length] -> [1, 187]

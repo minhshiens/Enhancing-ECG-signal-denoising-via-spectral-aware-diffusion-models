@@ -41,7 +41,7 @@ class GaussianDiffusion:
         # Note: condition is the Artifact Noisy Signal
         pred_x0 = self.model(x_t, t, condition)
         
-        # Clip pred_x0 to [-1, 1] for stability (standard in diffusion for images/signals)
+        # Clip pred_x0 to [-1, 1] for stability (standard in diffusion for signals)
         pred_x0 = torch.clamp(pred_x0, -1, 1)
 
         # 2. Compute Posterior Mean
@@ -51,7 +51,7 @@ class GaussianDiffusion:
         )
 
         # 3. Compute Posterior Variance
-        # We use log variance for numerical stability
+        # Use log variance for numerical stability
         posterior_log_variance = torch.log(
             torch.clamp(self.posterior_variance[t], min=1e-20)
         )
