@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+data/
+
+checkpoint/
+
+!results/*.csv
+!experiments/*.log
+!experiments/*.yaml
+
