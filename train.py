@@ -55,7 +55,7 @@ def train(config, config_path):
     sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
     sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
     
-    WARMUP_EPOCHS = 10
+    WARMUP_EPOCHS = 5
 
     # 6. Loop
     for epoch in range(config['epochs']):

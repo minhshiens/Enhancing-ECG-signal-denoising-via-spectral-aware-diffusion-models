@@ -117,7 +117,6 @@ def evaluate():
     beta = 1 - alpha 
     pred_ensemble = (alpha * pred_baseline) + ((beta) * pred_spectral)
     ensemble_np = pred_ensemble.cpu().numpy()
-    # =======================================================
     
     # 3. Compute Metrics and Save Plots
     print(">>> Computing Metrics and Generating Advanced Plots...")
